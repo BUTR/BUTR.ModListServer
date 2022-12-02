@@ -1,0 +1,30 @@
+﻿@model ModListModel
+
+@{
+    ViewData["Title"] = "Mod List";
+}
+
+<form action="butrloader/@Model.Id">
+    <input type="submit" value="Get BUTRLoader Mod Import List" />
+</form>
+<br />
+<span>Game Version: </span>
+<span>@Model.ModList.Version</span>
+<br />
+<br />
+@foreach (var module in Model.ModList.Modules)
+{
+    <span>Id: </span>
+    <span>@module.Id</span>
+    <br />
+    <span>Version: </span>
+    <span>@module.Version</span>
+    <br />
+    <span>Name: </span>
+    <span>@module.Name</span>
+    <br />
+    <span>Url: </span>
+    <span>@module.Url</span>
+    <br />
+    <br />
+}
