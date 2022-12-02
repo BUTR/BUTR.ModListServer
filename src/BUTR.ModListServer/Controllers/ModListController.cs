@@ -20,7 +20,7 @@ namespace BUTR.ModListServer.Controllers
         }
 
         [HttpGet]
-        [Route("modlist/{id:guid}")]
+        [Route("{id:guid}")]
         public async Task<IActionResult> IndexAsync(string id, CancellationToken ct)
         {
             if (await _cache.GetStringAsync(id, ct) is not { } json || JsonSerializer.Deserialize<ModList>(json) is not { } modList)
