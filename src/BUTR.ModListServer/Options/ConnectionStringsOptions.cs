@@ -4,7 +4,7 @@ namespace BUTR.ModListServer.Options
 {
     public sealed class ConnectionStringsOptionsValidator : AbstractValidator<ConnectionStringsOptions>
     {
-        public ConnectionStringsOptionsValidator(HttpClient client)
+        public ConnectionStringsOptionsValidator()
         {
             RuleFor(x => x.Main).NotEmpty();
         }

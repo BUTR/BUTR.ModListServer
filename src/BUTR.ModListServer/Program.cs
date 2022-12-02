@@ -19,6 +19,7 @@ namespace BUTR.ModListServer
     public class Program
     {
         private const string ConnectionStringsSectionName = "ConnectionStrings";
+        private const string ModListUploadSectionName = "ModListUpload";
 
         private static JsonSerializerOptions Configure(JsonSerializerOptions opt)
         {
@@ -34,6 +35,7 @@ namespace BUTR.ModListServer
             var builder = WebApplication.CreateBuilder(args);
 
             var connectionStringSection = builder.Configuration.GetSection(ConnectionStringsSectionName);
+            var modListUploadSection = builder.Configuration.GetSection(ModListUploadSectionName);
 
             builder.Services.AddValidatedOptions<ConnectionStringsOptions, ConnectionStringsOptionsValidator>(connectionStringSection);
 
@@ -49,8 +51,6 @@ namespace BUTR.ModListServer
                 options.TableName = "modlist_cache_entry";
                 options.CreateInfrastructure = true;
             });
-
-            builder.Services.AddHttpClient();
 
             builder.Services.AddControllersWithViews().AddJsonOptions(opt => Configure(opt.JsonSerializerOptions));
             builder.Services.AddRouting(options =>
