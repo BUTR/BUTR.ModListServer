@@ -48,7 +48,8 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         context: ./
         file: ./src/BUTR.ModListServer/Dockerfile
-        platforms: linux/amd64,linux/arm64
+        #platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         push: true
         tags: ghcr.io/butr/modlistserver:latest
         cache-from: type=local,src=/tmp/.buildx-cache
