@@ -38,6 +38,7 @@ namespace BUTR.ModListServer
             var modListUploadSection = builder.Configuration.GetSection(ModListUploadSectionName);
 
             builder.Services.AddValidatedOptions<ConnectionStringsOptions, ConnectionStringsOptionsValidator>(connectionStringSection);
+            builder.Services.AddValidatedOptions<ModListUploadOptions, ModListUploadOptionsValidator>(modListUploadSection);
 
             /*
             builder.Services.AddDistributedMemoryCache();

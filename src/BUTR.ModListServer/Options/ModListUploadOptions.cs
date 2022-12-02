@@ -12,6 +12,6 @@ namespace BUTR.ModListServer.Options
 
     public record ModListUploadOptions
     {
-        public string? BaseUri { get; set; }
+        public required string BaseUri { get; set; }
     }
 }
