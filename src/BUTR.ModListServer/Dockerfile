@@ -4,17 +4,17 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 
-COPY ["BUTR.ModListServer/BUTR.ModListServer.csproj", "BUTR.ModListServer/"]
+COPY ["src/BUTR.ModListServer/BUTR.ModListServer.csproj", "src/BUTR.ModListServer/"]
 
-RUN dotnet restore "BUTR.ModListServer/BUTR.ModListServer.csproj"
+RUN dotnet restore "src/BUTR.ModListServer/BUTR.ModListServer.csproj"
 
 COPY . .
 
 WORKDIR "/src/BUTR.ModListServer"
-RUN dotnet build "BUTR.ModListServer.csproj" -c Release -o /app/build
+RUN dotnet build "src/BUTR.ModListServer.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "BUTR.ModListServer.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "src/BUTR.ModListServer.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
