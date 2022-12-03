@@ -1,11 +1,4 @@
-using System.IO.Compression;
-using System.Reflection;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Unicode;
-
-using Aragas.Extensions.Options.FluentValidation.Extensions;
+﻿using Aragas.Extensions.Options.FluentValidation.Extensions;
 
 using BUTR.ModListServer.Options;
 
@@ -13,6 +6,13 @@ using Community.Microsoft.Extensions.Caching.PostgreSql;
 
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.OpenApi.Models;
+
+using System.IO.Compression;
+using System.Reflection;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Unicode;
 
 namespace BUTR.ModListServer
 {
