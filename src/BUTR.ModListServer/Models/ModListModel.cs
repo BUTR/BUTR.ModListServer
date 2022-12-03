@@ -1,4 +1,4 @@
-namespace BUTR.ModListServer.Models
+﻿namespace BUTR.ModListServer.Models
 {
     public class ModListModel
     {

@@ -1,11 +1,11 @@
-﻿using System.Text.Json;
-
-using BUTR.ModListServer.Models;
+﻿using BUTR.ModListServer.Models;
 using BUTR.ModListServer.Options;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
+
+using System.Text.Json;
 
 namespace BUTR.ModListServer.Controllers
 {
