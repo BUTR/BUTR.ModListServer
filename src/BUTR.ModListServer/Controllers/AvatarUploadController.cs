@@ -27,12 +27,12 @@ namespace BUTR.ModListServer.Controllers
         }
 
         [HttpPost("avatar/upload")]
-        [Consumes("text/plain")]
+        [Consumes("application/octet-stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK, "text/plain")]
         [ProducesResponseType(typeof(void), StatusCodes.Status500InternalServerError, "application/problem+json")]
         public async Task<IActionResult> UploadAsync(CancellationToken ct)
         {
-            if (HttpContext.Request.Body.Length > 1024 * 1024)
+            if (HttpContext.Request.Headers.ContentLength is not <= 1024 * 1024)
                 return BadRequest();
 
             if (await Image.LoadAsync(HttpContext.Request.Body, ct) is not Image<Rgba32> image || !image.DangerousTryGetSinglePixelMemory(out var memory))
