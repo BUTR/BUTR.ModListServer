@@ -47,7 +47,7 @@ namespace BUTR.ModListServer.Controllers
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(8)
             }, ct);
-            return Ok($"{_options.BaseUri}/avatar/{id}");
+            return Ok($"{_options.BaseUri}/avatar/{id}.png");
         }
     }
 }

@@ -20,7 +20,7 @@ namespace BUTR.ModListServer.Controllers
         }
 
         [HttpGet]
-        [Route("avatar/{id:guid}")]
+        [Route("avatar/{id:guid}.png")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK, "text/plain")]
         [ProducesResponseType(typeof(void), StatusCodes.Status500InternalServerError, "application/problem+json")]
         public async Task<IActionResult> IndexAsync(Guid id, CancellationToken ct)
