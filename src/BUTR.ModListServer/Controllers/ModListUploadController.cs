@@ -33,13 +33,13 @@ namespace BUTR.ModListServer.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status500InternalServerError, "application/problem+json")]
         public async Task<IActionResult> UploadAsync([FromBody] ModList modList, CancellationToken ct)
         {
-            var guid = Guid.NewGuid().ToString();
+            var id = Guid.NewGuid().ToString();
             var json = JsonSerializer.Serialize(modList);
-            await _cache.SetStringAsync(guid, json, new DistributedCacheEntryOptions
+            await _cache.SetStringAsync(id, json, new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(8)
             }, ct);
-            return Ok($"{_options.BaseUri}/{guid}");
+            return Ok($"{_options.BaseUri}/{id}");
         }
     }
 }

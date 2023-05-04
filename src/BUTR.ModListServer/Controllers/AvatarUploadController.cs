@@ -42,12 +42,12 @@ namespace BUTR.ModListServer.Controllers
             using var stream = _recyclableMemoryStreamManager.GetStream();
             await converted.SaveAsPngAsync(stream, cancellationToken: ct);
             
-            var guid = Guid.NewGuid().ToString();
-            await _cache.SetAsync(guid, stream.ToArray(), new DistributedCacheEntryOptions
+            var id = Guid.NewGuid().ToString();
+            await _cache.SetAsync($"avatar_{id}", stream.ToArray(), new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(8)
             }, ct);
-            return Ok($"{_options.BaseUri}/avatar/{guid}");
+            return Ok($"{_options.BaseUri}/avatar/{id}");
         }
     }
 }
