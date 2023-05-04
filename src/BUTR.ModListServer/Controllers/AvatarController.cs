@@ -1,9 +1,5 @@
-﻿using BUTR.ModListServer.Models;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-
-using System.Text.Json;
 
 namespace BUTR.ModListServer.Controllers
 {
@@ -20,15 +16,15 @@ namespace BUTR.ModListServer.Controllers
         }
 
         [HttpGet]
-        [Route("avatar/{id:guid}.png")]
-        [ProducesResponseType(typeof(void), StatusCodes.Status200OK, "text/plain")]
+        [Route("avatar/{id:guid}.webp")]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK, "image/webp")]
         [ProducesResponseType(typeof(void), StatusCodes.Status500InternalServerError, "application/problem+json")]
         public async Task<IActionResult> IndexAsync(Guid id, CancellationToken ct)
         {
             if (await _cache.GetAsync($"avatar_{id}", ct) is not { } data)
                 return NotFound();
 
-            return File(data, "text/plain");
+            return File(data, "image/webp");
         }
     }
 }

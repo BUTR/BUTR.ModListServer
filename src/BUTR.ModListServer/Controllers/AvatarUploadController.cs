@@ -40,14 +40,14 @@ namespace BUTR.ModListServer.Controllers
 
             var converted = Image.LoadPixelData<Bgra32>(MemoryMarshal.Cast<Rgba32, byte>(memory.Span), image.Width, image.Height);
             using var stream = _recyclableMemoryStreamManager.GetStream();
-            await converted.SaveAsPngAsync(stream, cancellationToken: ct);
+            await converted.SaveAsWebpAsync(stream, cancellationToken: ct);
             
             var id = Guid.NewGuid().ToString();
             await _cache.SetAsync($"avatar_{id}", stream.ToArray(), new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(8)
             }, ct);
-            return Ok($"{_options.BaseUri}/avatar/{id}.png");
+            return Ok($"{_options.BaseUri}/avatar/{id}.webp");
         }
     }
 }
