@@ -5,6 +5,7 @@ using BUTR.ModListServer.Options;
 using Community.Microsoft.Extensions.Caching.PostgreSql;
 
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.IO;
 using Microsoft.OpenApi.Models;
 
 using System.IO.Compression;
@@ -72,6 +73,8 @@ namespace BUTR.ModListServer
                 options.Level = CompressionLevel.SmallestSize;
             });
 
+            builder.Services.AddSingleton<RecyclableMemoryStreamManager>();
+            
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(opt =>
             {
