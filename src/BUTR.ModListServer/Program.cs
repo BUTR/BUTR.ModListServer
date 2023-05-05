@@ -74,7 +74,7 @@ namespace BUTR.ModListServer
             });
 
             builder.Services.AddSingleton<RecyclableMemoryStreamManager>();
-            
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(opt =>
             {
