@@ -1,119 +1,125 @@
-﻿using Aragas.Extensions.Options.FluentValidation.Extensions;
+﻿using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.ResourceDetectors.Container;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
-using BUTR.ModListServer.Options;
+using Serilog;
+using Serilog.Events;
 
-using Community.Microsoft.Extensions.Caching.PostgreSql;
+namespace BUTR.ModListServer;
 
-using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.IO;
-using Microsoft.OpenApi.Models;
-
-using System.IO.Compression;
-using System.Reflection;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Unicode;
-
-namespace BUTR.ModListServer
+public class Program
 {
-    public class Program
+    public static async Task Main(string[] args)
     {
-        private const string ConnectionStringsSectionName = "ConnectionStrings";
-        private const string ModListUploadSectionName = "ModListUpload";
-
-        private static JsonSerializerOptions Configure(JsonSerializerOptions opt)
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
+        
+        try
         {
-            opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-            opt.PropertyNameCaseInsensitive = true;
-            opt.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-            opt.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-            return opt;
+            Log.Information("Starting web application");
+
+            var builder = CreateHostBuilder(args);
+            var host = builder.Build();
+            await host.RunAsync();
         }
-
-        public static void Main(string[] args)
+        catch (Exception ex)
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            var connectionStringSection = builder.Configuration.GetSection(ConnectionStringsSectionName);
-            var modListUploadSection = builder.Configuration.GetSection(ModListUploadSectionName);
-
-            builder.Services.AddValidatedOptions<ConnectionStringsOptions, ConnectionStringsOptionsValidator>(connectionStringSection);
-            builder.Services.AddValidatedOptions<ModListUploadOptions, ModListUploadOptionsValidator>(modListUploadSection);
-
-            /*
-            builder.Services.AddDistributedMemoryCache();
-            */
-            builder.Services.AddDistributedPostgreSqlCache(options =>
-            {
-                var opts = connectionStringSection.Get<ConnectionStringsOptions>();
-
-                options.ConnectionString = opts.Main;
-                options.SchemaName = "modlist";
-                options.TableName = "modlist_cache_entry";
-                options.CreateInfrastructure = true;
-            });
-
-            builder.Services.AddControllersWithViews().AddJsonOptions(opt => Configure(opt.JsonSerializerOptions));
-            builder.Services.AddRouting(options =>
-            {
-                options.LowercaseUrls = true;
-            });
-            builder.Services.AddResponseCompression(options =>
-            {
-                options.Providers.Add<BrotliCompressionProvider>();
-                options.Providers.Add<GzipCompressionProvider>();
-            });
-            builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
-            {
-                options.Level = CompressionLevel.Fastest;
-            });
-            builder.Services.Configure<GzipCompressionProviderOptions>(options =>
-            {
-                options.Level = CompressionLevel.SmallestSize;
-            });
-
-            builder.Services.AddSingleton<RecyclableMemoryStreamManager>();
-            
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(opt =>
-            {
-                opt.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Version = "v1",
-                    Title = "BUTR's ModList Server API",
-                    Description = "BUTR's API that for managing Mod Lists",
-                });
-
-                opt.DescribeAllParametersInCamelCase();
-                opt.SupportNonNullableReferenceTypes();
-
-                var currentAssembly = Assembly.GetExecutingAssembly();
-                var xmlFilePaths = currentAssembly.GetReferencedAssemblies()
-                    .Append(currentAssembly.GetName())
-                    .Select(x => Path.Combine(Path.GetDirectoryName(currentAssembly.Location)!, $"{x.Name}.xml"))
-                    .Where(File.Exists)
-                    .ToList();
-                foreach (var xmlFilePath in xmlFilePaths)
-                    opt.IncludeXmlComments(xmlFilePath);
-            });
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseAuthorization();
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=ModList}/{action=IndexAsync}/{id?}");
-
-            app.Run();
+            Log.Fatal(ex, "Application terminated unexpectedly");
+        }
+        finally
+        {
+            await Log.CloseAndFlushAsync();
         }
     }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) => Host
+        .CreateDefaultBuilder(args)
+        .ConfigureServices((ctx, services) =>
+        {
+            if (ctx.Configuration.GetSection("Oltp") is { } oltpSection)
+            {
+                var openTelemetry = services.AddOpenTelemetry()
+                    .ConfigureResource(builder =>
+                    {
+                        builder.AddDetector(new ContainerResourceDetector());
+                        builder.AddService(
+                            ctx.HostingEnvironment.ApplicationName,
+                            ctx.HostingEnvironment.EnvironmentName,
+                            typeof(Program).Assembly.GetName().Version?.ToString(),
+                            false,
+                            Environment.MachineName);
+                        builder.AddTelemetrySdk();
+                    });
+
+                if (oltpSection.GetValue<string?>("MetricsEndpoint") is { } metricsEndpoint)
+                {
+                    var metricsProtocol = oltpSection.GetValue<OtlpExportProtocol>("MetricsProtocol");
+                    openTelemetry.WithMetrics(builder => builder
+                        .AddMeter("BUTR.CrashReportServer.Controllers.CrashUploadController")
+                        .AddProcessInstrumentation()
+                        .AddRuntimeInstrumentation(instrumentationOptions =>
+                        {
+
+                        })
+                        .AddAspNetCoreInstrumentation()
+                        .AddOtlpExporter(o =>
+                        {
+                            o.Endpoint = new Uri(metricsEndpoint);
+                            o.Protocol = metricsProtocol;
+                        }));
+                }
+
+                if (oltpSection.GetValue<string?>("TracingEndpoint") is { } tracingEndpoint)
+                {
+                    var tracingProtocol = oltpSection.GetValue<OtlpExportProtocol>("TracingProtocol");
+                    openTelemetry.WithTracing(builder => builder
+                        .AddAspNetCoreInstrumentation(instrumentationOptions =>
+                        {
+                            instrumentationOptions.RecordException = true;
+                        })
+                        .AddOtlpExporter(o =>
+                        {
+                            o.Endpoint = new Uri(tracingEndpoint);
+                            o.Protocol = tracingProtocol;
+                        }));
+                }
+            }
+        })
+        .ConfigureWebHostDefaults(webBuilder =>
+        {
+            webBuilder.UseStartup<Startup>();
+        })
+        .UseSerilog((context, services, configuration) =>
+        {
+            configuration
+                .ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services);
+        }, writeToProviders: true)
+        .ConfigureLogging((ctx, builder) =>
+        {
+            var oltpSection = ctx.Configuration.GetSection("Oltp");
+            if (oltpSection == null!) return;
+
+            var loggingEndpoint = oltpSection.GetValue<string>("LoggingEndpoint");
+            if (loggingEndpoint is null) return;
+            var loggingProtocol = oltpSection.GetValue<OtlpExportProtocol>("LoggingProtocol");
+
+            builder.AddOpenTelemetry(o =>
+            {
+                o.IncludeScopes = true;
+                o.ParseStateValues = true;
+                o.IncludeFormattedMessage = true;
+                o.AddOtlpExporter((options, processorOptions) =>
+                {
+                    options.Endpoint = new Uri(loggingEndpoint);
+                    options.Protocol = loggingProtocol;
+                });
+            });
+        });
 }

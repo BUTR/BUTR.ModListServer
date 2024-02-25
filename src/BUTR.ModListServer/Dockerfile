@@ -1,22 +1,27 @@
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
-WORKDIR /app
-
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
-WORKDIR /src
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS restore
+ARG TARGETARCH
+WORKDIR /build
 
 COPY ["src/BUTR.ModListServer/BUTR.ModListServer.csproj", "BUTR.ModListServer/"]
+COPY ["src/nuget.config", "src/"]
 
-RUN dotnet restore "BUTR.ModListServer/BUTR.ModListServer.csproj"
+RUN dotnet restore "BUTR.ModListServer/BUTR.ModListServer.csproj" -a $TARGETARCH;
 
 COPY ["src/BUTR.ModListServer/", "BUTR.ModListServer/"]
 
-WORKDIR "/src/BUTR.ModListServer"
-RUN dotnet build "BUTR.ModListServer.csproj" -c Release -o /app/build
+#COPY [".git/HEAD", ".git/HEAD"]
+#COPY [".git/config", ".git/config"]
+#COPY [".git/refs/heads/", ".git/refs/heads/"]
 
-FROM build AS publish
-RUN dotnet publish "BUTR.ModListServer.csproj" -c Release -o /app/publish
 
-FROM base AS final
+FROM restore AS publish
+ARG TARGETARCH
+WORKDIR /build
+
+RUN dotnet publish "src/BUTR.ModListServer/BUTR.ModListServer.csproj" -c Release -a $TARGETARCH -o /app/publish;
+
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
