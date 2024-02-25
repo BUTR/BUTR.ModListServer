@@ -5,7 +5,7 @@ WORKDIR /build
 COPY ["src/BUTR.ModListServer/BUTR.ModListServer.csproj", "BUTR.ModListServer/"]
 #COPY ["src/nuget.config", "src/"]
 
-RUN dotnet restore "BUTR.ModListServer/BUTR.ModListServer.csproj" -a $TARGETARCH;
+RUN dotnet restore "src/BUTR.ModListServer/BUTR.ModListServer.csproj" -a $TARGETARCH;
 
 COPY ["src/BUTR.ModListServer/", "BUTR.ModListServer/"]
 
