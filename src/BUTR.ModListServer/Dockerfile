@@ -2,12 +2,12 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS restore
 ARG TARGETARCH
 WORKDIR /build
 
-COPY ["src/BUTR.ModListServer/BUTR.ModListServer.csproj", "BUTR.ModListServer/"]
+COPY ["src/BUTR.ModListServer/BUTR.ModListServer.csproj", "src/BUTR.ModListServer/"]
 #COPY ["src/nuget.config", "src/"]
 
 RUN dotnet restore "src/BUTR.ModListServer/BUTR.ModListServer.csproj" -a $TARGETARCH;
 
-COPY ["src/BUTR.ModListServer/", "BUTR.ModListServer/"]
+COPY ["src/BUTR.ModListServer/", "src/BUTR.ModListServer/"]
 
 #COPY [".git/HEAD", ".git/HEAD"]
 #COPY [".git/config", ".git/config"]
