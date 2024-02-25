@@ -1,4 +1,4 @@
-using BUTR.ModListServer.Options;
+﻿using BUTR.ModListServer.Options;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
