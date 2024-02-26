@@ -6,8 +6,8 @@ public sealed class ModListUploadOptionsValidator : AbstractValidator<ModListUpl
 {
     public ModListUploadOptionsValidator()
     {
-            RuleFor(x => x.BaseUri).NotEmpty();
-        }
+        RuleFor(x => x.BaseUri).NotEmpty();
+    }
 }
 
 public record ModListUploadOptions

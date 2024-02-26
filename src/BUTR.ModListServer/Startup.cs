@@ -21,7 +21,7 @@ public class Startup
 {
     private const string ConnectionStringsSectionName = "ConnectionStrings";
     private const string ModListUploadSectionName = "ModListUpload";
-    
+
     private static JsonSerializerOptions Configure(JsonSerializerOptions opt)
     {
         opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
@@ -30,7 +30,7 @@ public class Startup
         opt.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         return opt;
     }
-    
+
     private readonly string _appName;
     private readonly IConfiguration _configuration;
 
@@ -81,7 +81,7 @@ public class Startup
         });
 
         services.AddSingleton<RecyclableMemoryStreamManager>();
-            
+
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(opt =>
         {
@@ -117,7 +117,7 @@ public class Startup
         app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", _appName));
 
         app.UseRouting();
-        
+
         app.UseAuthentication();
         app.UseAuthorization();
 

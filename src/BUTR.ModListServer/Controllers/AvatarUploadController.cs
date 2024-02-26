@@ -42,7 +42,7 @@ public class AvatarUploadController : ControllerBase
         var converted = Image.LoadPixelData<Bgra32>(MemoryMarshal.Cast<Rgba32, byte>(memory.Span), image.Width, image.Height);
         await using var stream = _recyclableMemoryStreamManager.GetStream();
         await converted.SaveAsWebpAsync(stream, cancellationToken: ct);
-            
+
         var id = Guid.NewGuid().ToString();
         await _cache.SetAsync($"avatar_{id}", stream.ToArray(), new DistributedCacheEntryOptions
         {
