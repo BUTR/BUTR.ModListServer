@@ -6,8 +6,8 @@ public sealed class ConnectionStringsOptionsValidator : AbstractValidator<Connec
 {
     public ConnectionStringsOptionsValidator()
     {
-            RuleFor(x => x.Main).NotEmpty();
-        }
+        RuleFor(x => x.Main).NotEmpty();
+    }
 }
 
 public sealed record ConnectionStringsOptions

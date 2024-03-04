@@ -19,7 +19,7 @@ public class Program
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .CreateBootstrapLogger();
-        
+
         try
         {
             Log.Information("Starting web application");
