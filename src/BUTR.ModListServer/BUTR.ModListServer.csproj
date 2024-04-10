@@ -13,7 +13,7 @@
   <ItemGroup>
     <PackageReference Include="Aragas.Extensions.Options.FluentValidation" Version="1.1.0.14" />
     <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="4.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
