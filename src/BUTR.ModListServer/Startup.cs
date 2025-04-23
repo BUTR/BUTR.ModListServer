@@ -1,10 +1,13 @@
 ﻿using Aragas.Extensions.Options.FluentValidation.Extensions;
 
 using BUTR.ModListServer.Options;
+using BUTR.ModListServer.Services;
 
 using Community.Microsoft.Extensions.Caching.PostgreSql;
 
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Microsoft.IO;
 using Microsoft.OpenApi.Models;
 
@@ -21,6 +24,7 @@ public class Startup
 {
     private const string ConnectionStringsSectionName = "ConnectionStrings";
     private const string ModListUploadSectionName = "ModListUpload";
+    private const string UptimeKumaSectionName = "UptimeKuma";
 
     private static JsonSerializerOptions Configure(JsonSerializerOptions opt)
     {
@@ -42,11 +46,25 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        var assemblyName = typeof(Startup).Assembly.GetName();
+        var userAgent = $"{assemblyName.Name ?? "ERROR"} v{assemblyName.Version?.ToString() ?? "ERROR"} (github.com/BUTR)";
+
         var connectionStringSection = _configuration.GetSection(ConnectionStringsSectionName);
         var modListUploadSection = _configuration.GetSection(ModListUploadSectionName);
+        var uptimeKumaSection = _configuration.GetSection(UptimeKumaSectionName);
 
         services.AddValidatedOptions<ConnectionStringsOptions, ConnectionStringsOptionsValidator>().Bind(connectionStringSection);
         services.AddValidatedOptions<ModListUploadOptions, ModListUploadOptionsValidator>().Bind(modListUploadSection);
+        services.Configure<UptimeKumaOptions>(uptimeKumaSection);
+
+        services.AddHttpClient<IHealthCheckPublisher, UptimeKumaHealthCheckPublisher>().ConfigureHttpClient((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<UptimeKumaOptions>>().Value;
+
+            if (Uri.TryCreate(options.Endpoint, UriKind.Absolute, out var uri))
+                client.BaseAddress = uri;
+            client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+        });
 
         /*
         services.AddDistributedMemoryCache();
@@ -104,6 +122,9 @@ public class Startup
             foreach (var xmlFilePath in xmlFilePaths)
                 opt.IncludeXmlComments(xmlFilePath);
         });
+
+        services.AddHealthChecks()
+            .AddNpgSql(_configuration.GetConnectionString("Main")!);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -115,6 +136,8 @@ public class Startup
 
         app.UseSwagger();
         app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", _appName));
+
+        app.UseHealthChecks("/healthz");
 
         app.UseRouting();
 
