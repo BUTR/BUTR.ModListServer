@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-noble AS restore
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-noble AS restore
 ARG TARGETARCH
 WORKDIR /build
 
@@ -23,7 +23,7 @@ RUN dotnet publish "src/BUTR.ModListServer/BUTR.ModListServer.csproj" -c Release
 
 # Chiseled: no shell or package manager. -extra keeps ICU/tzdata, because the project does not set
 # InvariantGlobalization. If the app needs no culture data, set it and use the plain chiseled image.
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-noble-chiseled-extra AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 

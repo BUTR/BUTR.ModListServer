@@ -6,6 +6,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.IO;
 
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Bmp;
+using SixLabors.ImageSharp.Formats.Gif;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.PixelFormats;
 
 using System.Runtime.InteropServices;
@@ -16,6 +21,18 @@ namespace BUTR.ModListServer.Controllers;
 [Route("")]
 public class AvatarUploadController : ControllerBase
 {
+    // Anonymous uploads: decode only the formats an avatar can arrive in, never TIFF and the other
+    // rarely used decoders, and skip metadata (ICC/EXIF/XMP), so their parsers never see uploaded data.
+    private static readonly DecoderOptions UploadDecoderOptions = new()
+    {
+        Configuration = new Configuration(
+            new PngConfigurationModule(),
+            new WebpConfigurationModule(),
+            new GifConfigurationModule(),
+            new BmpConfigurationModule()),
+        SkipMetadata = true,
+    };
+
     private readonly ILogger _logger;
     private readonly ModListUploadOptions _options;
     private readonly IDistributedCache _cache;
@@ -36,7 +53,7 @@ public class AvatarUploadController : ControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status500InternalServerError, "application/problem+json")]
     public async Task<IActionResult> UploadAsync(CancellationToken ct)
     {
-        if (await Image.LoadAsync(HttpContext.Request.Body, ct) is not Image<Rgba32> image || !image.DangerousTryGetSinglePixelMemory(out var memory))
+        if (await Image.LoadAsync(UploadDecoderOptions, HttpContext.Request.Body, ct) is not Image<Rgba32> image || !image.DangerousTryGetSinglePixelMemory(out var memory))
             return BadRequest();
 
         var converted = Image.LoadPixelData<Bgra32>(MemoryMarshal.Cast<Rgba32, byte>(memory.Span), image.Width, image.Height);

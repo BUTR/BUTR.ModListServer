@@ -1,7 +1,6 @@
 ﻿using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
-using OpenTelemetry.ResourceDetectors.Container;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -47,7 +46,7 @@ public class Program
                 var openTelemetry = services.AddOpenTelemetry()
                     .ConfigureResource(builder =>
                     {
-                        builder.AddDetector(new ContainerResourceDetector());
+                        builder.AddContainerDetector();
                         builder.AddService(
                             ctx.HostingEnvironment.ApplicationName,
                             ctx.HostingEnvironment.EnvironmentName,

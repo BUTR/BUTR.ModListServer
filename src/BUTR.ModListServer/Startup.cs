@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IO;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 using System.IO.Compression;
 using System.Reflection;
