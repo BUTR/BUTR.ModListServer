@@ -13,6 +13,9 @@ on:
 jobs:
   build-and-publish-docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write    # the repository-dispatch step that triggers the deploy
+      packages: write    # push to ghcr.io
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -38,8 +41,8 @@ jobs:
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
-        username: BUTR
-        password: ${{ secrets.TOKEN_GPR }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and Push
       id: docker_build
@@ -60,6 +63,4 @@ jobs:
     - name: Trigger 'deploy-docker-image'
       uses: peter-evans/repository-dispatch@v3
       with:
-        token: ${{ secrets.TOKEN_GPR }}
-        repository: BUTR/BUTR.ModListServer 
-        event-type: deploy-docker-image
+        token: ${{ secrets.GITHUB_TOKEN }}
